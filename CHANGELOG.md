@@ -8,6 +8,7 @@
 - Optional `schema:` keyword on `Document.from_json` / `Node.from_json` (defaults to `TipTap.default_schema`).
 - `TipTap.default_schema` accessor; `TipTap.node_for` / `TipTap.mark_for` read from it.
 - `TipTap::ParentBuildable` / `parent_builder` — declarative builders on parent nodes when a child type is registered.
+- `Schema#unknown_node` / `from_json(..., unknown_node:)` — opt-in `:passthrough` via `TipTap::Nodes::Unknown` (default remains `:raise`).
 - Docs: `docs/schema.md` (nodes, marks, parent builders).
 
 ### Changed

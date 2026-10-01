@@ -7,11 +7,23 @@ module TipTap
     MissingNodeError = Class.new(StandardError)
     MissingMarkError = Class.new(StandardError)
 
-    attr_reader :nodes, :marks
+    UNKNOWN_NODE_POLICIES = %i[raise passthrough].freeze
 
-    def initialize(nodes = {}, marks = {})
+    attr_reader :nodes, :marks, :unknown_node
+
+    def initialize(nodes = {}, marks = {}, unknown_node: :raise)
       @nodes = nodes.transform_keys(&:to_s)
       @marks = marks.transform_keys(&:to_s)
+      self.unknown_node = unknown_node
+    end
+
+    def unknown_node=(policy)
+      policy = policy.to_sym
+      unless UNKNOWN_NODE_POLICIES.include?(policy)
+        raise ArgumentError, "unknown_node must be one of #{UNKNOWN_NODE_POLICIES.join(", ")} (got #{policy.inspect})"
+      end
+
+      @unknown_node = policy
     end
 
     def register(name, klass)
@@ -20,7 +32,22 @@ module TipTap
     end
 
     def node_for(name)
-      nodes.fetch(name.to_s) { raise MissingNodeError, "Unknown node type: #{name}" }
+      resolve_node_class(name, policy: unknown_node)
+    end
+
+    # Resolve a node class for +name+ using the given unknown-node policy.
+    # :raise (default) → MissingNodeError; :passthrough → Nodes::Unknown.
+    def resolve_node_class(name, policy: unknown_node)
+      nodes.fetch(name.to_s) do
+        case policy.to_sym
+        when :passthrough
+          Nodes::Unknown
+        when :raise
+          raise MissingNodeError, "Unknown node type: #{name}"
+        else
+          raise ArgumentError, "unknown_node must be one of #{UNKNOWN_NODE_POLICIES.join(", ")} (got #{policy.inspect})"
+        end
+      end
     end
 
     def registered?(name)
@@ -61,11 +88,14 @@ module TipTap
     end
 
     def dup
-      self.class.new(nodes.dup, marks.dup)
+      self.class.new(nodes.dup, marks.dup, unknown_node: unknown_node)
     end
 
     def ==(other)
-      other.is_a?(Schema) && nodes == other.nodes && marks == other.marks
+      other.is_a?(Schema) &&
+        nodes == other.nodes &&
+        marks == other.marks &&
+        unknown_node == other.unknown_node
     end
   end
 end

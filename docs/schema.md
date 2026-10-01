@@ -144,3 +144,23 @@ Parents may be Class objects or fully qualified strings (for load-order safety).
 
 - `Paragraph#text` / `Heading#text` — positional text + marks
 - `Codeblock#code` — builds a `Text` node with a code mark
+
+
+## Unknown nodes
+
+By default, parsing raises `Schema::MissingNodeError` for unregistered types (backward compatible).
+
+Opt into passthrough so unknown nodes are kept as `TipTap::Nodes::Unknown` (original type,
+attrs, and recursively parsed content) for `to_h` round-trips:
+
+```ruby
+# Schema-level
+schema = TipTap.default_schema.dup
+schema.unknown_node = :passthrough  # or :raise (default)
+document = TipTap::Document.from_json(json, schema: schema)
+
+# Per-call override (does not mutate the schema)
+document = TipTap::Document.from_json(json, unknown_node: :passthrough)
+```
+
+`Unknown#to_html` / `#to_markdown` / `#to_plain_text` render **children only** (no wrapper tag).

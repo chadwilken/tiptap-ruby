@@ -49,6 +49,7 @@ require "tip_tap/marks/highlight"
 # Order is mostly free-form; install_parent_builders! finalizes forward refs.
 require "tip_tap/document"
 require "tip_tap/nodes/text"
+require "tip_tap/nodes/unknown"
 require "tip_tap/nodes/hard_break"
 require "tip_tap/nodes/horizontal_rule"
 require "tip_tap/nodes/paragraph"
