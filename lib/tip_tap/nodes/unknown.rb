@@ -21,13 +21,13 @@ module TipTap
         original_type
       end
 
-      def self.from_json(json, schema: TipTap.default_schema, unknown_node: nil)
+      def self.from_json(json, schema: TipTap.default_schema, unknown_node: nil, generate_toc_ids: nil)
         json.deep_stringify_keys!
 
         policy = unknown_node.nil? ? schema.unknown_node : unknown_node
         content = Array(json["content"]).map do |node|
           klass = schema.resolve_node_class(node["type"], policy: policy)
-          klass.from_json(node, schema: schema, unknown_node: policy)
+          klass.from_json(node, schema: schema, unknown_node: policy, generate_toc_ids: generate_toc_ids)
         end
 
         new(content, original_type: json["type"], **Hash(json["attrs"]))

@@ -50,7 +50,8 @@ module TipTap
       # @param json [Hash] The JSON object to parse
       # @param schema [TipTap::Schema] Schema used to resolve node types
       # @param unknown_node [Symbol, nil] Override schema policy: :raise or :passthrough
-      def from_json(json, schema: TipTap.default_schema, unknown_node: nil)
+      # @param generate_toc_ids [Boolean, nil] Forwarded to nested nodes (Heading uses it)
+      def from_json(json, schema: TipTap.default_schema, unknown_node: nil, generate_toc_ids: nil)
         return new if json.nil?
 
         json.deep_stringify_keys!
@@ -59,7 +60,7 @@ module TipTap
 
         content = Array(json["content"]).map do |node|
           klass = schema.resolve_node_class(node["type"], policy: policy)
-          klass.from_json(node, schema: schema, unknown_node: policy)
+          klass.from_json(node, schema: schema, unknown_node: policy, generate_toc_ids: generate_toc_ids)
         end
 
         new(content, **Hash(json["attrs"]))

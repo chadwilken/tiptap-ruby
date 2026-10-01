@@ -169,3 +169,12 @@ document = TipTap::Document.from_json(json, unknown_node: :passthrough)
 ```
 
 `Unknown#to_html` / `#to_markdown` / `#to_plain_text` render **children only** (no wrapper tag).
+
+## Heading TOC ids
+
+Headings may carry `id` and `data-toc-id` for table-of-contents links.
+
+- **Preserve:** values from JSON/attrs are kept (never overwritten on parse).
+- **Generate when missing (default):** `Heading.new` and `from_json` fill both attrs with a UUID when absent.
+- **Opt out:** `Heading.new(..., generate_toc_ids: false)` or `Document.from_json(json, generate_toc_ids: false)`.
+
