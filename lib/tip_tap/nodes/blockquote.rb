@@ -9,11 +9,7 @@ module TipTap
       self.html_tag = :blockquote
       self.html_class_name = "blockquote"
 
-      def paragraph(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(Paragraph.new(&block))
-      end
+      parent_builder on: TipTap::Document, as: :blockquote, require_block: true
 
       def to_markdown(context = Markdown::Context.root)
         inner = super(context)

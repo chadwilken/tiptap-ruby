@@ -9,11 +9,10 @@ module TipTap
       self.html_tag = :ol
       self.html_class_name = "ordered-list"
 
-      def list_item(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(ListItem.new(&block))
-      end
+      parent_builder on: [
+        TipTap::Document,
+        "TipTap::Nodes::ListItem"
+      ], as: :ordered_list, require_block: true
 
       def start
         attrs["start"]

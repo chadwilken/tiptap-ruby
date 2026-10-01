@@ -9,11 +9,10 @@ module TipTap
       self.html_tag = :ul
       self.html_class_name = "task-list"
 
-      def task_item(checked: false, &block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(TaskItem.new(checked: checked, &block))
-      end
+      parent_builder on: [
+        TipTap::Document,
+        "TipTap::Nodes::ListItem"
+      ], as: :task_list, require_block: true
 
       def to_markdown(context = Markdown::Context.root)
         content.map { |node| node.to_markdown(context) }.join("\n")

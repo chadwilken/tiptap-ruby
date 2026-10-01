@@ -8,6 +8,14 @@ module TipTap
       self.type_name = "paragraph"
       self.html_tag = :p
 
+      # Document allows an empty paragraph (no block); other parents require one.
+      parent_builder on: TipTap::Document, as: :paragraph
+      parent_builder on: [
+        "TipTap::Nodes::ListItem",
+        "TipTap::Nodes::Blockquote",
+        "TipTap::Nodes::TableCell"
+      ], as: :paragraph, require_block: true
+
       def text(text, marks: [])
         add_content(Text.new(text, marks: marks))
       end

@@ -9,11 +9,10 @@ module TipTap
       self.html_tag = :ul
       self.html_class_name = "bullet-list"
 
-      def list_item(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(ListItem.new(&block))
-      end
+      parent_builder on: [
+        TipTap::Document,
+        "TipTap::Nodes::ListItem"
+      ], as: :bullet_list, require_block: true
 
       def to_markdown(context = Markdown::Context.root)
         content.map { |node| node.to_markdown(context, marker: "- ") }.join("\n")

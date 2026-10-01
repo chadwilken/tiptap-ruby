@@ -7,6 +7,8 @@ module TipTap
     class Image < Node
       self.type_name = "image"
 
+      parent_builder on: TipTap::Document, as: :image, args: [:src]
+
       def include_empty_content_in_json?
         false
       end

@@ -8,6 +8,9 @@ module TipTap
       self.type_name = "codeBlock"
       self.html_tag = :pre
 
+      parent_builder on: TipTap::Document, as: :codeblock, require_block: true
+
+      # Special-cased: builds a Text node with a code mark (not a child node type builder).
       def code(text)
         add_content(Text.new(text, marks: [{type: "code"}]))
       end

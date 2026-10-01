@@ -8,17 +8,7 @@ module TipTap
       self.type_name = "tableRow"
       self.html_tag = :tr
 
-      def table_cell(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(TableCell.new(&block))
-      end
-
-      def table_header(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(TableHeader.new(&block))
-      end
+      parent_builder on: "TipTap::Nodes::Table", as: :table_row, require_block: true
 
       def to_markdown(context = Markdown::Context.root)
         row_data = to_markdown_row(context)

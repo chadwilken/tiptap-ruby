@@ -16,6 +16,7 @@ module TipTap
 
     def register(name, klass)
       nodes[name.to_s] = klass
+      klass.install_parent_builders! if klass.respond_to?(:install_parent_builders!)
     end
 
     def node_for(name)

@@ -116,3 +116,31 @@ end
 
 schema.use(CalloutExtension)
 ```
+
+
+## Parent builders
+
+Child node classes declare which parents get a builder method via `parent_builder`.
+Registration (`type_name=` / `Schema#register`) installs those methods onto the parents
+through an included module (idempotent; no hand-edited parent source required).
+
+```ruby
+class Callout < TipTap::Node
+  self.type_name = "callout"
+  self.html_tag = :aside
+
+  parent_builder on: TipTap::Document, as: :callout, require_block: true
+  # args: {level: 1}     → default kwargs
+  # args: [:src]         → required keywords
+end
+
+document.callout { |c| … }
+```
+
+Parents may be Class objects or fully qualified strings (for load-order safety).
+`TipTap.install_parent_builders!` runs at gem load to resolve forward references.
+
+### Still special-cased (not parent_builder)
+
+- `Paragraph#text` / `Heading#text` — positional text + marks
+- `Codeblock#code` — builds a `Text` node with a code mark

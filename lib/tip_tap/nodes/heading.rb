@@ -8,6 +8,8 @@ module TipTap
       self.type_name = "heading"
       self.html_tag = proc { "h#{level}" }
 
+      parent_builder on: TipTap::Document, as: :heading, require_block: true, args: {level: 1}
+
       def initialize(content = [], **attributes)
         super(content, **attributes)
         uuid = SecureRandom.uuid

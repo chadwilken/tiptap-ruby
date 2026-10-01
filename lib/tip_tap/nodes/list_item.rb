@@ -9,29 +9,10 @@ module TipTap
       self.html_tag = :li
       self.html_class_name = "list-item"
 
-      def paragraph(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(Paragraph.new(&block))
-      end
-
-      def bullet_list(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(BulletList.new(&block))
-      end
-
-      def ordered_list(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(OrderedList.new(&block))
-      end
-
-      def task_list(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(TaskList.new(&block))
-      end
+      parent_builder on: [
+        "TipTap::Nodes::BulletList",
+        "TipTap::Nodes::OrderedList"
+      ], as: :list_item, require_block: true
 
       def to_markdown(context = Markdown::Context.root, marker: "- ")
         marker_length = marker.length

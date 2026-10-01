@@ -9,6 +9,8 @@ module TipTap
       self.html_tag = :li
       self.html_class_name = proc { class_names("task-item", {checked: checked?}) }
 
+      parent_builder on: "TipTap::Nodes::TaskList", as: :task_item, require_block: true, args: {checked: false}
+
       def checked?
         attrs["checked"]
       end

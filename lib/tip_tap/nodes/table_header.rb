@@ -8,11 +8,7 @@ module TipTap
       self.type_name = "tableHeader"
       self.html_tag = :th
 
-      def paragraph(&block)
-        raise ArgumentError, "Block required" if block.nil?
-
-        add_content(Paragraph.new(&block))
-      end
+      parent_builder on: "TipTap::Nodes::TableRow", as: :table_header, require_block: true
     end
   end
 end

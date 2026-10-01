@@ -7,12 +7,14 @@
 - Schema mark API: `register_mark` / `mark_for` / `mark_registered?`; `TipTap.mark_for`.
 - Optional `schema:` keyword on `Document.from_json` / `Node.from_json` (defaults to `TipTap.default_schema`).
 - `TipTap.default_schema` accessor; `TipTap.node_for` / `TipTap.mark_for` read from it.
-- Docs: `docs/schema.md`.
+- `TipTap::ParentBuildable` / `parent_builder` — declarative builders on parent nodes when a child type is registered.
+- Docs: `docs/schema.md` (nodes, marks, parent builders).
 
 ### Changed
 
 - `TipTap::Registry` is now a compatibility façade over `TipTap.default_schema` (same public API; optional `register_mark` / `mark_for`).
 - `Text` HTML/Markdown rendering composes via schema-registered mark renderers (output for built-ins unchanged).
+- Built-in child builders (Document, ListItem, lists, tables, …) come from `parent_builder` declarations on child classes.
 
 ## [0.10.1] - 2025-11-21
 
