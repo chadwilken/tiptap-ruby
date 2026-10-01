@@ -50,7 +50,7 @@ document.heading(level: 1) do |heading|
 end
 ```
 
-Until the gem implements all of the node types and the documentation is complete, refer to the `Document` class to see the nodes that can be appended.
+Built-in builders (heading, paragraph, lists, table, `hard_break`, `horizontal_rule`, and so on) are declared on each node via `parent_builder`. See `lib/tip_tap/nodes/` or [docs/schema.md](docs/schema.md).
 
 ### Generate Output
 
@@ -86,7 +86,7 @@ document.to_plain_text # => My Important Document
 
 ### Custom Nodes
 
-You can extend the library to add custom node types. First, define your `Node` subclass.
+Node types are registered on a `TipTap::Schema` (the default schema is populated when the gem loads). Setting `type_name` registers the class for parsing; declare `parent_builder` so parents get a fluent builder—no monkey-patching required.
 
 ```ruby
 # lib/tip_tap/nodes/gallery.rb
@@ -94,40 +94,54 @@ You can extend the library to add custom node types. First, define your `Node` s
 module TipTap
   module Nodes
     class Gallery < Node
-      self.type_name = 'gallery'
+      self.type_name = "gallery" # registers on TipTap.default_schema
       self.html_tag = :div
-      self.html_class_name = 'gallery'
+      self.html_class_name = "gallery"
+
+      parent_builder on: TipTap::Document, as: :gallery, require_block: true
+    end
+
+    class GalleryItem < Node
+      self.type_name = "galleryItem"
+      self.html_tag = :div
+
+      parent_builder on: Gallery, as: :gallery_item, args: [:src]
     end
   end
 end
 ```
 
-Then create an initializer and define an extensions module and include it in the corresponding node. For example:
+Require your nodes (for example from an initializer), then build as usual:
 
 ```ruby
-# config/initializers/tiptap.rb
+require "tip_tap/nodes/gallery"
 
-require 'tip_tap'
-require 'tip_tap/nodes/gallery'
-
-module TipTap::DocumentAdditions
-  def gallery(&block)
-    raise ArgumentError, "Block required" if block.nil?
-    add_content(TipTap::Nodes::Gallery.new(&block))
-  end
-end
-
-TipTap::Document.include(TipTap::DocumentAdditions)
-```
-
-Now you can generate gallery nodes on a `Document` instance:
-
-```ruby
 document = TipTap::Document.new
 document.gallery do |gallery|
-  gallery.gallery_item(src: 'example.com')
+  gallery.gallery_item(src: "https://example.com/photo.jpg")
 end
+
+# Parsing also resolves the custom type via the schema:
+TipTap::Document.from_json(document.to_h)
 ```
+
+#### Isolated schema (recommended for app-specific types)
+
+To avoid registering globally on `TipTap.default_schema`, duplicate the default schema and register there:
+
+```ruby
+schema = TipTap.default_schema.dup
+schema.register("gallery", TipTap::Nodes::Gallery)
+schema.register("galleryItem", TipTap::Nodes::GalleryItem)
+
+document = TipTap::Document.from_json(json, schema: schema)
+```
+
+`TipTap::Registry` still works; it is a thin façade over the default schema. Prefer `Schema` for new code.
+
+#### Custom marks
+
+Inline marks work the same way with `TipTap::Mark` and `register_mark` / `self.type_name =`. See [docs/schema.md](docs/schema.md) for marks, unknown-node passthrough, and Heading TOC id options.
 
 ## Development
 
