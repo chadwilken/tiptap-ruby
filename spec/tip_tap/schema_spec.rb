@@ -112,4 +112,55 @@ RSpec.describe TipTap::Schema do
       expect(original.registered?("onlyOnCopy")).to eq(false)
     end
   end
+
+  describe "#register_mark / #mark_for" do
+    it "registers and looks up a custom mark" do
+      schema = TipTap::Schema.new
+      schema.register_mark("myMark", String)
+
+      expect(schema.mark_for("myMark")).to eq(String)
+      expect(schema.mark_registered?("myMark")).to eq(true)
+    end
+
+    it "raises MissingMarkError for unknown types" do
+      schema = TipTap::Schema.new
+
+      expect { schema.mark_for("unknown") }.to raise_error(TipTap::Schema::MissingMarkError)
+    end
+  end
+
+  describe "default schema marks" do
+    it "includes built-in mark types" do
+      schema = TipTap.default_schema
+
+      expect(schema.mark_for("bold")).to eq(TipTap::Marks::Bold)
+      expect(schema.mark_for("link")).to eq(TipTap::Marks::Link)
+    end
+  end
+
+  describe "#dup with marks" do
+    it "copies mark registrations without sharing the hash" do
+      original = TipTap.default_schema.dup
+      copy = original.dup
+      copy.register_mark("onlyOnCopy", String)
+
+      expect(copy.mark_registered?("onlyOnCopy")).to eq(true)
+      expect(original.mark_registered?("onlyOnCopy")).to eq(false)
+    end
+  end
+
+  describe "#use with marks" do
+    it "merges marks from another schema" do
+      base = TipTap::Schema.new
+      base.register_mark("bold", TipTap::Marks::Bold)
+
+      extra = TipTap::Schema.new
+      extra.register_mark("italic", TipTap::Marks::Italic)
+
+      base.use(extra)
+
+      expect(base.mark_for("bold")).to eq(TipTap::Marks::Bold)
+      expect(base.mark_for("italic")).to eq(TipTap::Marks::Italic)
+    end
+  end
 end

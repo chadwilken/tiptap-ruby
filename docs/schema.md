@@ -1,17 +1,21 @@
 # TipTap::Schema
 
-`TipTap::Schema` is the canonical registry of node type names → Ruby classes.
-Parsing (`Document.from_json` / `Node.from_json`) resolves each JSON `type` through a schema.
+`TipTap::Schema` is the canonical registry of **node** and **mark** type names → Ruby classes.
+Parsing (`Document.from_json` / `Node.from_json`) resolves each JSON node `type` through a schema.
+`Text` resolves mark `type` values through the same schema when rendering HTML/Markdown.
 
 ## Default schema
 
-Loading the gem builds registrations into `TipTap.default_schema` via each node's
-`self.type_name = "..."` (see `TipTap::Registerable`). Built-ins (`doc`, `paragraph`,
-`text`, lists, tables, etc.) live there.
+Loading the gem builds registrations into `TipTap.default_schema` via each node's or mark's
+`self.type_name = "..."` . Built-in nodes (`doc`, `paragraph`, `text`, …) and marks
+(`bold`, `italic`, `link`, …) live there.
 
 ```ruby
 TipTap.default_schema.node_for("paragraph") # => TipTap::Nodes::Paragraph
-TipTap.node_for("paragraph")                # same, via default schema
+TipTap.node_for("paragraph")                # same
+
+TipTap.default_schema.mark_for("bold")      # => TipTap::Marks::Bold
+TipTap.mark_for("bold")                     # same
 ```
 
 ## Registry compatibility
@@ -22,10 +26,12 @@ TipTap.node_for("paragraph")                # same, via default schema
 | --- | --- |
 | `Registry.register(name, klass)` | `TipTap.default_schema.register` |
 | `Registry.node_for(name)` | `TipTap.default_schema.node_for` |
-| `Registry.clear` | `TipTap.default_schema.clear` |
+| `Registry.register_mark(name, klass)` | `TipTap.default_schema.register_mark` |
+| `Registry.mark_for(name)` | `TipTap.default_schema.mark_for` |
+| `Registry.clear` | `TipTap.default_schema.clear` (nodes **and** marks) |
 | `Registry.registry` | `TipTap.default_schema.nodes` |
 
-`Registry::MissingNodeError` is an alias of `Schema::MissingNodeError`.
+`Registry::MissingNodeError` / `MissingMarkError` alias the Schema error classes.
 
 Prefer `Schema` for new code; keep using `Registry` if you already depend on it.
 
@@ -55,23 +61,58 @@ document = TipTap::Document.from_json(json, schema: schema)
 
 Isolated schemas do not affect other parses that use the default schema.
 
+## Custom marks
+
+Marks subclass `TipTap::Mark` and implement `wrap_html` / `wrap_markdown`.
+`html_priority` / `markdown_priority` control nesting order (lower = applied first = innermost).
+
+### Global registration
+
+```ruby
+class Spoiler < TipTap::Mark
+  self.type_name = "spoiler"
+  self.html_priority = 55
+
+  def wrap_html(value)
+    content_tag(:span, value, class: "spoiler")
+  end
+
+  def wrap_markdown(value, context: nil)
+    "||#{value}||"
+  end
+end
+```
+
+### Isolated schema
+
+```ruby
+schema = TipTap.default_schema.dup
+schema.register_mark("spoiler", Spoiler)
+
+text = TipTap::Nodes::Text.new("secret", marks: [{type: "spoiler"}], schema: schema)
+text.to_html # => <span class="spoiler">secret</span>
+
+# Builder API unchanged — marks stay TipTap-shaped hashes in to_h:
+text.to_h # => { type: "text", text: "secret", marks: [{ type: "spoiler" }] }
+```
+
+Unknown mark types on a schema are ignored during rendering but still appear in `to_h`.
+
 ## Composing schemas
 
 ```ruby
 schema = TipTap::Schema.new
-schema.use(TipTap.default_schema) # copy built-ins
+schema.use(TipTap.default_schema) # copy built-in nodes and marks
 schema.register("callout", MyCallout)
+schema.register_mark("spoiler", Spoiler)
 
 # or an extension object:
 module CalloutExtension
   def self.register(schema)
     schema.register("callout", MyCallout)
+    schema.register_mark("spoiler", Spoiler)
   end
 end
 
 schema.use(CalloutExtension)
 ```
-
-## Marks
-
-Mark handling is unchanged in this phase; schema registration for marks comes later.

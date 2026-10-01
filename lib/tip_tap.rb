@@ -3,6 +3,7 @@
 require_relative "tip_tap/version"
 require "tip_tap/schema"
 require "tip_tap/registry"
+require "tip_tap/mark"
 
 module TipTap
   class Error < StandardError; end
@@ -18,10 +19,25 @@ module TipTap
   def self.node_for(name)
     default_schema.node_for(name)
   end
+
+  def self.mark_for(name)
+    default_schema.mark_for(name)
+  end
 end
 
-# Nodes register themselves onto TipTap.default_schema via type_name=,
+# Nodes and marks register themselves onto TipTap.default_schema via type_name=,
 # so default_schema must exist before these requires.
+require "tip_tap/marks/bold"
+require "tip_tap/marks/italic"
+require "tip_tap/marks/underline"
+require "tip_tap/marks/strike"
+require "tip_tap/marks/code"
+require "tip_tap/marks/link"
+require "tip_tap/marks/text_style"
+require "tip_tap/marks/superscript"
+require "tip_tap/marks/subscript"
+require "tip_tap/marks/highlight"
+
 require "tip_tap/document"
 require "tip_tap/nodes/bullet_list"
 require "tip_tap/nodes/hard_break"

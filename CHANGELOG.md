@@ -3,13 +3,16 @@
 ### Added
 
 - `TipTap::Schema` — first-class node type registry (register, lookup, `use`/`dup`).
+- `TipTap::Mark` and built-in mark classes (`TipTap::Marks::*`) registered on Schema.
+- Schema mark API: `register_mark` / `mark_for` / `mark_registered?`; `TipTap.mark_for`.
 - Optional `schema:` keyword on `Document.from_json` / `Node.from_json` (defaults to `TipTap.default_schema`).
-- `TipTap.default_schema` accessor; `TipTap.node_for` reads from it.
+- `TipTap.default_schema` accessor; `TipTap.node_for` / `TipTap.mark_for` read from it.
 - Docs: `docs/schema.md`.
 
 ### Changed
 
-- `TipTap::Registry` is now a compatibility façade over `TipTap.default_schema` (same public API).
+- `TipTap::Registry` is now a compatibility façade over `TipTap.default_schema` (same public API; optional `register_mark` / `mark_for`).
+- `Text` HTML/Markdown rendering composes via schema-registered mark renderers (output for built-ins unchanged).
 
 ## [0.10.1] - 2025-11-21
 

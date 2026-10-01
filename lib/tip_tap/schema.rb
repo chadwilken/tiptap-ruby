@@ -1,15 +1,17 @@
 # frozen_string_literal: true
 
-# TipTap::Schema is the canonical store for node type registrations.
+# TipTap::Schema is the canonical store for node and mark type registrations.
 # TipTap::Registry delegates to TipTap.default_schema for backward compatibility.
 module TipTap
   class Schema
     MissingNodeError = Class.new(StandardError)
+    MissingMarkError = Class.new(StandardError)
 
-    attr_reader :nodes
+    attr_reader :nodes, :marks
 
-    def initialize(nodes = {})
+    def initialize(nodes = {}, marks = {})
       @nodes = nodes.transform_keys(&:to_s)
+      @marks = marks.transform_keys(&:to_s)
     end
 
     def register(name, klass)
@@ -24,16 +26,30 @@ module TipTap
       nodes.key?(name.to_s)
     end
 
-    def clear
-      nodes.clear
+    def register_mark(name, klass)
+      marks[name.to_s] = klass
     end
 
-    # Merge node registrations from another schema or from objects that
+    def mark_for(name)
+      marks.fetch(name.to_s) { raise MissingMarkError, "Unknown mark type: #{name}" }
+    end
+
+    def mark_registered?(name)
+      marks.key?(name.to_s)
+    end
+
+    def clear
+      nodes.clear
+      marks.clear
+    end
+
+    # Merge registrations from another schema or from objects that
     # respond to #register(schema). Returns self for chaining.
     def use(*extensions)
       extensions.each do |extension|
         if extension.is_a?(Schema)
           extension.nodes.each { |name, klass| register(name, klass) }
+          extension.marks.each { |name, klass| register_mark(name, klass) }
         elsif extension.respond_to?(:register)
           extension.register(self)
         else
@@ -44,11 +60,11 @@ module TipTap
     end
 
     def dup
-      self.class.new(nodes.dup)
+      self.class.new(nodes.dup, marks.dup)
     end
 
     def ==(other)
-      other.is_a?(Schema) && nodes == other.nodes
+      other.is_a?(Schema) && nodes == other.nodes && marks == other.marks
     end
   end
 end
