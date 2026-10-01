@@ -7,6 +7,8 @@ module TipTap
     class HorizontalRule < Node
       self.type_name = "horizontalRule"
 
+      parent_builder on: TipTap::Document, as: :horizontal_rule
+
       def include_empty_content_in_json?
         false
       end

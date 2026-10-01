@@ -7,6 +7,11 @@ module TipTap
     class HardBreak < Node
       self.type_name = "hardBreak"
 
+      parent_builder on: [
+        "TipTap::Nodes::Paragraph",
+        "TipTap::Nodes::Heading"
+      ], as: :hard_break
+
       def include_empty_content_in_json?
         false
       end

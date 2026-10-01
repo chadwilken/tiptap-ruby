@@ -16,6 +16,7 @@
 - `TipTap::Registry` is now a compatibility façade over `TipTap.default_schema` (same public API; optional `register_mark` / `mark_for`).
 - `Text` HTML/Markdown rendering composes via schema-registered mark renderers (output for built-ins unchanged).
 - Built-in child builders (Document, ListItem, lists, tables, …) come from `parent_builder` declarations on child classes.
+- `HardBreak` / `HorizontalRule` expose `hard_break` (Paragraph, Heading) and `horizontal_rule` (Document) builders.
 
 ## [0.10.1] - 2025-11-21
 

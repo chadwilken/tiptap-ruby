@@ -140,6 +140,11 @@ document.callout { |c| … }
 Parents may be Class objects or fully qualified strings (for load-order safety).
 `TipTap.install_parent_builders!` runs at gem load to resolve forward references.
 
+Leaf builders (no block):
+
+- `paragraph.hard_break` / `heading.hard_break` → `hardBreak`
+- `document.horizontal_rule` → `horizontalRule`
+
 ### Still special-cased (not parent_builder)
 
 - `Paragraph#text` / `Heading#text` — positional text + marks
