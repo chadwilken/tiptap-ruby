@@ -47,15 +47,16 @@ module TipTap
     module ClassMethods
       # Create a new instance from a TipTap JSON object.
       # All nodes are recursively parsed and converted to Ruby objects
-      # All nodes must be registered in the registry.
+      # All nodes must be registered in the schema (defaults to TipTap.default_schema).
       # @param json [Hash] The JSON object to parse
-      def from_json(json)
+      # @param schema [TipTap::Schema] Optional schema used to resolve node types
+      def from_json(json, schema: TipTap.default_schema)
         return new if json.nil?
 
         json.deep_stringify_keys!
 
         content = Array(json["content"]).map do |node|
-          TipTap.node_for(node["type"]).from_json(node)
+          schema.node_for(node["type"]).from_json(node, schema: schema)
         end
 
         new(content, **Hash(json["attrs"]))

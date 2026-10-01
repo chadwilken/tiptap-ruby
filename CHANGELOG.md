@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+### Added
+
+- `TipTap::Schema` — first-class node type registry (register, lookup, `use`/`dup`).
+- Optional `schema:` keyword on `Document.from_json` / `Node.from_json` (defaults to `TipTap.default_schema`).
+- `TipTap.default_schema` accessor; `TipTap.node_for` reads from it.
+- Docs: `docs/schema.md`.
+
+### Changed
+
+- `TipTap::Registry` is now a compatibility façade over `TipTap.default_schema` (same public API).
+
 ## [0.10.1] - 2025-11-21
 
 - Add support for Table of Contents

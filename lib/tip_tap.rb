@@ -1,7 +1,27 @@
 # frozen_string_literal: true
 
 require_relative "tip_tap/version"
+require "tip_tap/schema"
 require "tip_tap/registry"
+
+module TipTap
+  class Error < StandardError; end
+
+  def self.default_schema
+    @default_schema ||= Schema.new
+  end
+
+  def self.default_schema=(schema)
+    @default_schema = schema
+  end
+
+  def self.node_for(name)
+    default_schema.node_for(name)
+  end
+end
+
+# Nodes register themselves onto TipTap.default_schema via type_name=,
+# so default_schema must exist before these requires.
 require "tip_tap/document"
 require "tip_tap/nodes/bullet_list"
 require "tip_tap/nodes/hard_break"
@@ -20,11 +40,3 @@ require "tip_tap/nodes/table"
 require "tip_tap/nodes/table_row"
 require "tip_tap/nodes/table_cell"
 require "tip_tap/nodes/table_header"
-
-module TipTap
-  class Error < StandardError; end
-
-  def self.node_for(name)
-    Registry.node_for(name)
-  end
-end

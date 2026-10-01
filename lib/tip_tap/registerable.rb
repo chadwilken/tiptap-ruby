@@ -9,6 +9,8 @@ module TipTap
     end
 
     module ClassMethods
+      # Setting type_name registers this class on TipTap.default_schema
+      # (via the Registry compatibility façade).
       def type_name=(type_name)
         @type_name = type_name
         Registry.register(type_name, self)

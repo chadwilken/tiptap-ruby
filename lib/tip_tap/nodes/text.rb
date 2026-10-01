@@ -17,7 +17,7 @@ module TipTap
         yield self if block_given?
       end
 
-      def self.from_json(json)
+      def self.from_json(json, schema: TipTap.default_schema)
         json.deep_stringify_keys!
 
         new(json["text"], marks: Array(json["marks"]))
