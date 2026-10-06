@@ -7,21 +7,20 @@ module TipTap
     class Text < Node
       # Allow the text to be set and accessed directly
       attr_accessor :text
-      attr_reader :marks, :schema
+      attr_reader :marks
 
       self.type_name = "text"
 
       def initialize(content, **attributes)
         @text = content
-        @schema = attributes[:schema] || TipTap.default_schema
         @marks = Array(attributes[:marks]).map(&:deep_stringify_keys)
         yield self if block_given?
       end
 
-      def self.from_json(json, schema: TipTap.default_schema, unknown_node: nil, generate_toc_ids: nil)
+      def self.from_json(json, unknown_node: nil, generate_toc_ids: nil)
         json.deep_stringify_keys!
 
-        new(json["text"], marks: Array(json["marks"]), schema: schema)
+        new(json["text"], marks: Array(json["marks"]))
       end
 
       def to_h
@@ -98,6 +97,7 @@ module TipTap
       end
 
       def mark_objects
+        schema = TipTap.default_schema
         marks.filter_map do |mark_hash|
           type = mark_hash["type"]
           next unless schema.mark_registered?(type)

@@ -34,7 +34,7 @@ RSpec.describe TipTap::Schema do
     end
   end
 
-  describe "parsing with a custom schema" do
+  describe "parsing with a custom node on the default schema" do
     let(:custom_node_class) do
       Class.new(TipTap::Node) do
         self.html_tag = :div
@@ -45,9 +45,12 @@ RSpec.describe TipTap::Schema do
       end
     end
 
-    it "parses JSON using the given schema without registering on the default schema" do
-      schema = TipTap::Schema.new.use(TipTap.default_schema)
-      schema.register("customBlock", custom_node_class)
+    after do
+      TipTap.default_schema.nodes.delete("customBlock")
+    end
+
+    it "parses JSON after registering on TipTap.default_schema" do
+      TipTap.default_schema.register("customBlock", custom_node_class)
 
       json = {
         type: "doc",
@@ -61,17 +64,11 @@ RSpec.describe TipTap::Schema do
         ]
       }
 
-      document = TipTap::Document.from_json(json, schema: schema)
+      document = TipTap::Document.from_json(json)
 
       expect(document.content.first).to be_a(custom_node_class)
       expect(document.content.first.content.first).to be_a(TipTap::Nodes::Text)
       expect(document.to_plain_text).to eq("Hello custom")
-
-      expect {
-        TipTap::Document.from_json(json)
-      }.to raise_error(TipTap::Schema::MissingNodeError)
-
-      expect(TipTap.default_schema.registered?("customBlock")).to eq(false)
     end
   end
 
@@ -148,19 +145,6 @@ RSpec.describe TipTap::Schema do
 
       expect { schema.dup }.to raise_error(NoMethodError)
       expect { schema.clone }.to raise_error(NoMethodError)
-    end
-  end
-
-  describe "isolated schema via use" do
-    it "copies registrations without sharing state with the default schema" do
-      schema = TipTap::Schema.new.use(TipTap.default_schema)
-      schema.register("onlyOnIsolated", String)
-      schema.register_mark("onlyOnIsolated", String)
-
-      expect(schema.node_for("paragraph")).to eq(TipTap::Nodes::Paragraph)
-      expect(schema.mark_for("bold")).to eq(TipTap::Marks::Bold)
-      expect(TipTap.default_schema.registered?("onlyOnIsolated")).to eq(false)
-      expect(TipTap.default_schema.mark_registered?("onlyOnIsolated")).to eq(false)
     end
   end
 end

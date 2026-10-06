@@ -71,8 +71,9 @@ module TipTap
       marks.clear
     end
 
-    # Merge registrations from another schema or from objects that
-    # respond to #register(schema). Returns self for chaining.
+    # Apply extension objects that respond to #register(schema), or merge
+    # node/mark maps from another Schema instance. Prefer
+    # TipTap.default_schema.use(MyExtension) for app code.
     def use(*extensions)
       extensions.each do |extension|
         if extension.is_a?(Schema)
@@ -87,8 +88,7 @@ module TipTap
       self
     end
 
-    # Schemas are not copyable. Build an isolated schema with
-    # Schema.new.use(TipTap.default_schema) instead.
+    # Schemas are not copyable. Use TipTap.default_schema only.
     undef_method :dup, :clone
 
     def ==(other)

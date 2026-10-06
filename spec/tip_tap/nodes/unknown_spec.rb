@@ -39,13 +39,17 @@ RSpec.describe TipTap::Nodes::Unknown do
     end
   end
 
-  describe "schema.unknown_node = :passthrough" do
-    let(:schema) do
-      TipTap::Schema.new.use(TipTap.default_schema).tap { |s| s.unknown_node = :passthrough }
+  describe "default_schema.unknown_node = :passthrough" do
+    around do |example|
+      previous = TipTap.default_schema.unknown_node
+      TipTap.default_schema.unknown_node = :passthrough
+      example.run
+    ensure
+      TipTap.default_schema.unknown_node = previous
     end
 
     it "preserves unknown nodes for to_h round-trip" do
-      document = TipTap::Document.from_json(unknown_json, schema: schema)
+      document = TipTap::Document.from_json(unknown_json)
 
       expect(document.content.size).to eq(2)
       expect(document.content.first).to be_a(TipTap::Nodes::Paragraph)
@@ -77,7 +81,7 @@ RSpec.describe TipTap::Nodes::Unknown do
     end
 
     it "renders HTML/markdown/plain from children only" do
-      document = TipTap::Document.from_json(unknown_json, schema: schema)
+      document = TipTap::Document.from_json(unknown_json)
       unknown = document.content.last
 
       expect(unknown.to_html).to eq("<p>Inside unknown</p>")
@@ -88,17 +92,16 @@ RSpec.describe TipTap::Nodes::Unknown do
   end
 
   describe "from_json(unknown_node: :passthrough)" do
-    it "opts in without mutating the schema" do
-      schema = TipTap::Schema.new.use(TipTap.default_schema)
-      expect(schema.unknown_node).to eq(:raise)
+    it "opts in without mutating the default schema" do
+      expect(TipTap.default_schema.unknown_node).to eq(:raise)
 
-      document = TipTap::Document.from_json(unknown_json, schema: schema, unknown_node: :passthrough)
+      document = TipTap::Document.from_json(unknown_json, unknown_node: :passthrough)
 
       expect(document.content.last).to be_a(TipTap::Nodes::Unknown)
-      expect(schema.unknown_node).to eq(:raise)
+      expect(TipTap.default_schema.unknown_node).to eq(:raise)
 
       expect {
-        TipTap::Document.from_json(unknown_json, schema: schema)
+        TipTap::Document.from_json(unknown_json)
       }.to raise_error(TipTap::Schema::MissingNodeError)
     end
   end
@@ -146,8 +149,9 @@ RSpec.describe TipTap::Nodes::Unknown do
 
   describe "Schema#unknown_node=" do
     it "rejects invalid policies" do
-      schema = TipTap::Schema.new
-      expect { schema.unknown_node = :skip }.to raise_error(ArgumentError, /passthrough/)
+      expect {
+        TipTap.default_schema.unknown_node = :skip
+      }.to raise_error(ArgumentError, /passthrough/)
     end
   end
 end

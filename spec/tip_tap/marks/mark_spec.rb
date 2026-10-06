@@ -61,27 +61,21 @@ RSpec.describe "custom marks via Schema" do
     end
   end
 
-  it "renders a custom mark registered on an isolated schema" do
-    schema = TipTap::Schema.new.use(TipTap.default_schema)
-    schema.register_mark("spoiler", spoiler_mark)
+  after do
+    TipTap.default_schema.marks.delete("spoiler")
+  end
+
+  it "renders a custom mark registered on TipTap.default_schema" do
+    TipTap.default_schema.register_mark("spoiler", spoiler_mark)
 
     node = TipTap::Nodes::Text.new(
       "secret",
-      marks: [{type: "spoiler"}, {type: "bold"}],
-      schema: schema
+      marks: [{type: "spoiler"}, {type: "bold"}]
     )
 
     expect(node.to_html).to eq('<strong><span class="spoiler">secret</span></strong>')
     expect(node.to_markdown).to eq("**||secret||**")
     expect(node.to_h[:marks]).to eq([{type: "spoiler"}, {type: "bold"}])
-
-    # Default schema does not know spoiler — only bold applies
-    default_node = TipTap::Nodes::Text.new(
-      "secret",
-      marks: [{type: "spoiler"}, {type: "bold"}]
-    )
-    expect(default_node.to_html).to eq("<strong>secret</strong>")
-    expect(TipTap.default_schema.mark_registered?("spoiler")).to eq(false)
   end
 
   it "exposes Registry mark helpers as a façade" do
