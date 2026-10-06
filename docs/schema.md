@@ -53,13 +53,14 @@ TipTap.default_schema.register("callout", MyCallout)
 ### Isolated schema (recommended for app-specific nodes)
 
 ```ruby
-schema = TipTap.default_schema.dup
+schema = TipTap::Schema.new.use(TipTap.default_schema)
 schema.register("callout", MyCallout)
 
 document = TipTap::Document.from_json(json, schema: schema)
 ```
 
 Isolated schemas do not affect other parses that use the default schema.
+`use` copies the default schema's node and mark registrations into the new schema.
 
 ## Custom marks
 
@@ -86,7 +87,7 @@ end
 ### Isolated schema
 
 ```ruby
-schema = TipTap.default_schema.dup
+schema = TipTap::Schema.new.use(TipTap.default_schema)
 schema.register_mark("spoiler", Spoiler)
 
 text = TipTap::Nodes::Text.new("secret", marks: [{type: "spoiler"}], schema: schema)
@@ -160,7 +161,7 @@ attrs, and recursively parsed content) for `to_h` round-trips:
 
 ```ruby
 # Schema-level
-schema = TipTap.default_schema.dup
+schema = TipTap::Schema.new.use(TipTap.default_schema)
 schema.unknown_node = :passthrough  # or :raise (default)
 document = TipTap::Document.from_json(json, schema: schema)
 

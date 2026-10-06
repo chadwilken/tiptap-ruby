@@ -127,15 +127,17 @@ TipTap::Document.from_json(document.to_h)
 
 #### Isolated schema (recommended for app-specific types)
 
-To avoid registering globally on `TipTap.default_schema`, duplicate the default schema and register there:
+To avoid registering globally on `TipTap.default_schema`, build a new schema that pulls in the built-ins with `use`, then register your types there:
 
 ```ruby
-schema = TipTap.default_schema.dup
+schema = TipTap::Schema.new.use(TipTap.default_schema)
 schema.register("gallery", TipTap::Nodes::Gallery)
 schema.register("galleryItem", TipTap::Nodes::GalleryItem)
 
 document = TipTap::Document.from_json(json, schema: schema)
 ```
+
+Classes registered this way should not also set `self.type_name =`, since that registers them on the default schema too.
 
 `TipTap::Registry` still works; it is a thin façade over the default schema. Prefer `Schema` for new code.
 

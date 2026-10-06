@@ -2,7 +2,7 @@
 
 ### Added
 
-- `TipTap::Schema` — first-class node type registry (register, lookup, `use`/`dup`).
+- `TipTap::Schema` — first-class node type registry (register, lookup, `use`). Build isolated schemas with `Schema.new.use(TipTap.default_schema)`.
 - `TipTap::Mark` and built-in mark classes (`TipTap::Marks::*`) registered on Schema.
 - Schema mark API: `register_mark` / `mark_for` / `mark_registered?`; `TipTap.mark_for`.
 - Optional `schema:` keyword on `Document.from_json` / `Node.from_json` (defaults to `TipTap.default_schema`).

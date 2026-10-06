@@ -46,7 +46,7 @@ RSpec.describe TipTap::Schema do
     end
 
     it "parses JSON using the given schema without registering on the default schema" do
-      schema = TipTap.default_schema.dup
+      schema = TipTap::Schema.new.use(TipTap.default_schema)
       schema.register("customBlock", custom_node_class)
 
       json = {
@@ -102,17 +102,6 @@ RSpec.describe TipTap::Schema do
     end
   end
 
-  describe "#dup" do
-    it "copies registrations without sharing the hash" do
-      original = TipTap.default_schema.dup
-      copy = original.dup
-      copy.register("onlyOnCopy", String)
-
-      expect(copy.registered?("onlyOnCopy")).to eq(true)
-      expect(original.registered?("onlyOnCopy")).to eq(false)
-    end
-  end
-
   describe "#register_mark / #mark_for" do
     it "registers and looks up a custom mark" do
       schema = TipTap::Schema.new
@@ -138,17 +127,6 @@ RSpec.describe TipTap::Schema do
     end
   end
 
-  describe "#dup with marks" do
-    it "copies mark registrations without sharing the hash" do
-      original = TipTap.default_schema.dup
-      copy = original.dup
-      copy.register_mark("onlyOnCopy", String)
-
-      expect(copy.mark_registered?("onlyOnCopy")).to eq(true)
-      expect(original.mark_registered?("onlyOnCopy")).to eq(false)
-    end
-  end
-
   describe "#use with marks" do
     it "merges marks from another schema" do
       base = TipTap::Schema.new
@@ -161,6 +139,28 @@ RSpec.describe TipTap::Schema do
 
       expect(base.mark_for("bold")).to eq(TipTap::Marks::Bold)
       expect(base.mark_for("italic")).to eq(TipTap::Marks::Italic)
+    end
+  end
+
+  describe "copying" do
+    it "does not support dup or clone" do
+      schema = TipTap::Schema.new
+
+      expect { schema.dup }.to raise_error(NoMethodError)
+      expect { schema.clone }.to raise_error(NoMethodError)
+    end
+  end
+
+  describe "isolated schema via use" do
+    it "copies registrations without sharing state with the default schema" do
+      schema = TipTap::Schema.new.use(TipTap.default_schema)
+      schema.register("onlyOnIsolated", String)
+      schema.register_mark("onlyOnIsolated", String)
+
+      expect(schema.node_for("paragraph")).to eq(TipTap::Nodes::Paragraph)
+      expect(schema.mark_for("bold")).to eq(TipTap::Marks::Bold)
+      expect(TipTap.default_schema.registered?("onlyOnIsolated")).to eq(false)
+      expect(TipTap.default_schema.mark_registered?("onlyOnIsolated")).to eq(false)
     end
   end
 end

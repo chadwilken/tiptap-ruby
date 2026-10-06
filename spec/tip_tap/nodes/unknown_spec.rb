@@ -41,7 +41,7 @@ RSpec.describe TipTap::Nodes::Unknown do
 
   describe "schema.unknown_node = :passthrough" do
     let(:schema) do
-      TipTap.default_schema.dup.tap { |s| s.unknown_node = :passthrough }
+      TipTap::Schema.new.use(TipTap.default_schema).tap { |s| s.unknown_node = :passthrough }
     end
 
     it "preserves unknown nodes for to_h round-trip" do
@@ -89,7 +89,7 @@ RSpec.describe TipTap::Nodes::Unknown do
 
   describe "from_json(unknown_node: :passthrough)" do
     it "opts in without mutating the schema" do
-      schema = TipTap.default_schema.dup
+      schema = TipTap::Schema.new.use(TipTap.default_schema)
       expect(schema.unknown_node).to eq(:raise)
 
       document = TipTap::Document.from_json(unknown_json, schema: schema, unknown_node: :passthrough)
@@ -148,12 +148,6 @@ RSpec.describe TipTap::Nodes::Unknown do
     it "rejects invalid policies" do
       schema = TipTap::Schema.new
       expect { schema.unknown_node = :skip }.to raise_error(ArgumentError, /passthrough/)
-    end
-
-    it "is copied by dup" do
-      schema = TipTap.default_schema.dup
-      schema.unknown_node = :passthrough
-      expect(schema.dup.unknown_node).to eq(:passthrough)
     end
   end
 end

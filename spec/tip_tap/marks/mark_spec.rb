@@ -62,7 +62,7 @@ RSpec.describe "custom marks via Schema" do
   end
 
   it "renders a custom mark registered on an isolated schema" do
-    schema = TipTap.default_schema.dup
+    schema = TipTap::Schema.new.use(TipTap.default_schema)
     schema.register_mark("spoiler", spoiler_mark)
 
     node = TipTap::Nodes::Text.new(

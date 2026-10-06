@@ -87,9 +87,9 @@ module TipTap
       self
     end
 
-    def dup
-      self.class.new(nodes.dup, marks.dup, unknown_node: unknown_node)
-    end
+    # Schemas are not copyable. Build an isolated schema with
+    # Schema.new.use(TipTap.default_schema) instead.
+    undef_method :dup, :clone
 
     def ==(other)
       other.is_a?(Schema) &&
